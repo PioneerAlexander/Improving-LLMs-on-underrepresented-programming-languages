@@ -1,6 +1,7 @@
 import pandas as pd
 
-from src.dataset.preprocess import discard_functions_with_long_bodies, replace_indentation_and_eol_symbols
+from src.dataset.preprocess import discard_functions_with_long_bodies, replace_indentation_and_eol_symbols, \
+    decode_function_body
 
 from src.parser.utils import from_signature_body_pairs_to_dataframe, SignatureBodyOutput
 
@@ -47,3 +48,24 @@ def test_replace_indentation_and_eol_symbols():
                "return if (predicate(name, desc)) {<EOL><INDENT>assert(!visited)<EOL>visited = true<EOL>transform"
                "(original)<EOL><DEDENT>}<EOL>else {<EOL><INDENT>original<EOL><DEDENT>}<EOL><DEDENT>}<EOL>")
     assert replace_indentation_and_eol_symbols(body1) == answer1
+
+
+def test_decode_function_body():
+
+    body1 = """{
+    val original = super.visitMethod(access, name, desc, signature, exceptions)
+    return if (predicate(name, desc)) {
+        assert(!visited)
+        visited = true
+        transform(original)
+    }
+    else {
+        original
+    }
+}"""
+
+    answer1 = ("{<EOL><INDENT>val original = super.visitMethod(access, name, desc, signature, exceptions)<EOL>"
+               "return if (predicate(name, desc)) {<EOL><INDENT>assert(!visited)<EOL>visited = true<EOL>transform"
+               "(original)<EOL><DEDENT>}<EOL>else {<EOL><INDENT>original<EOL><DEDENT>}<EOL><DEDENT>}<EOL>")
+    assert decode_function_body(answer1) == body1
+    assert decode_function_body(replace_indentation_and_eol_symbols(body1)) == body1

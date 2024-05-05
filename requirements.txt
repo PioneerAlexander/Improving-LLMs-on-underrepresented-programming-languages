@@ -1,0 +1,13 @@
+kopyt~=0.0.2
+timeout-decorator
+torch~=2.3.0
+pandas~=2.2.2
+strenum~=0.4.15
+transformers~=4.40.1
+nltk~=3.8.1
+evaluate~=0.4.2
+Levenshtein~=0.25.1
+tyro~=0.8.3
+tqdm~=4.66.2
+wandb~=0.16.6
+peft~=0.10.0

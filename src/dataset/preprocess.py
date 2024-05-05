@@ -6,14 +6,14 @@ import re
 import pandas as pd
 
 
-def read_dataframe_from_json(filename: str) -> pd.DataFrame:
+def read_dataframe_from_json(filename: str, lines: bool = False) -> pd.DataFrame:
     """
     Returns DataFrame with columns for the signature and bodies of the functions
     """
 
     try:
         with open(filename, 'r', encoding='utf-8') as f:
-            df = pd.read_json(f)
+            df = pd.read_json(f, lines=lines)
             return df
 
     except IOError as e:
@@ -66,3 +66,37 @@ def replace_indentation_and_eol_symbols(
             result += line[indent:] + end_of_line_token
 
     return result
+
+
+def decode_function_body(
+        body: str,
+        indent_token: str = "<INDENT>",
+        dedent_token: str = "<DEDENT>",
+        end_of_line_token: str = "<EOL>",
+):
+    """
+    This function is an inverse transformation which replaces all special tokens in decoded body to the spaces and new
+    line symbol respectively
+    """
+
+    body_lines = body.split(end_of_line_token)
+
+    res_string = ""
+    indent_cnt = 0
+    for idx, line in enumerate(body_lines[:-1]):
+        if line.startswith(indent_token):
+            indent_cnt += 4
+            res_string += line.replace(indent_token, " " * indent_cnt)
+
+        elif line.startswith(dedent_token):
+            while line.startswith(dedent_token):
+                line = line.removeprefix(dedent_token)
+                indent_cnt -= 4
+            res_string += " " * indent_cnt + line
+
+        else:
+            res_string += " " * indent_cnt + line
+        if idx != len(body_lines[:-1]) - 1:
+            res_string += "\n"
+
+    return res_string

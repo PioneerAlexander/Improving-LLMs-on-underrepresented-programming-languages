@@ -1,0 +1,20 @@
+method: grid
+
+parameters:
+  lr:
+    values: [0.001]
+  weight_decay:
+    values: [0.01]
+command:
+  - ${env}
+  - python3
+  - -m
+  - src.model.finetune_model_peft
+  - kotlin_train.json
+  - --max_len=512
+  - --batch_size=32
+  - --epochs=1
+  - --log_output_every_steps=1000
+  - --use_wandb
+  - --wandb_project=jb_llm_test_task
+  - ${args}

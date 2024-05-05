@@ -76,6 +76,52 @@ def from_signature_body_pairs_to_dataframe(
     return pd.DataFrame([signature_body_pair.__dict__ for signature_body_pair in signature_body_pairs])
 
 
+def get_signature_body_pairs_from_kotlin_files(
+        kt_filenames: str,
+        not_parsed_filenames: str
+) -> List[SignatureBodyOutput]:
+    """
+    Args:
+        kt_filenames is the file with Kotlin filenames
+    Returns:
+        Collection of the signature-body pairs corresponded to the Kotlin functions
+    """
+    try:
+        with open(kt_filenames, 'r', encoding='utf-8') as f:
+            code_filenames = [name.strip() for name in f.readlines()]
+    except FileNotFoundError:
+        print(f'File with the name {kt_filenames} was not found in the root directory.')
+
+    body_signature_pairs: List = []
+
+    for name in code_filenames:
+        try:
+            declarations = get_file_declarations(filename=name)
+            function_declarations_buffer = []
+
+            function_declarations = extract_function_declarations(
+                declarations,
+                function_declarations_buffer
+            )
+        except Exception as g:
+            # Dump names of all unsuccessfully parsed files to the specified file
+            try:
+                with open(not_parsed_filenames, "a", encoding='utf-8') as f:
+                    f.write(name)
+            except Exception as e:
+                print(
+                    f"""Occurred the error {e} while trying to log the unsuccessfully 
+                    parsed files to {not_parsed_filenames} file""")
+            continue
+
+        body_signature_pairs.extend(
+            [extract_body_and_signature_from_function_declaration(function_declaration)
+             for function_declaration in function_declarations]
+        )
+
+    return body_signature_pairs
+
+
 def save_signature_body_pairs_to_json_file(filename: str, signature_body_pairs: List[SignatureBodyOutput]) -> None:
     """
      Saves collected signature body pairs to the json with the defined filename.
