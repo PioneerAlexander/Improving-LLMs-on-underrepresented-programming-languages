@@ -81,9 +81,9 @@ def main(
         per_device_eval_batch_size=32,
         num_train_epochs=epochs,
         weight_decay=weight_decay,
-        evaluation_strategy="epoch",
+        evaluation_strategy="no",
         save_strategy="epoch",
-        load_best_model_at_end=True,
+        logging_steps=10,
         report_to="wandb"
     )
 

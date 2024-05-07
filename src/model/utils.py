@@ -45,7 +45,6 @@ def preprocess_batch_for_training(batch: Dict, tokenizer, device: str, batch_siz
             [cls_token_id] + encoded_inputs["input_ids"][i].tolist() + [sep_token_id] + encoded["labels"][
                 i].tolist() + [sep_token_id]
         )
-    print(batch_input_ids)
 
     return [{"input_ids": torch.tensor(input_ids).to(device), "labels": labels} for input_ids, labels in
             zip(batch_input_ids, encoded["labels"])]
@@ -204,22 +203,22 @@ class FineTuningDataCollator:
         labels = []
         for example in batch:
             # Pad input_ids
-            input_id = example["input_ids"].squeeze(0)
+            input_id = example["input_ids"].to('cpu').squeeze(0)
             padded_input_id = torch.nn.functional.pad(input_id, (0, batch_max_length - input_id.shape[0]), value=0)
             input_ids.append(padded_input_id)
 
             # Pad attention_mask
-            att_mask = example["attention_mask"].squeeze(0)
+            att_mask = example["attention_mask"].to('cpu').squeeze(0)
             padded_att_mask = torch.nn.functional.pad(att_mask, (0, batch_max_length - att_mask.shape[0]), value=0)
             attention_mask.append(padded_att_mask)
 
             # Pad labels
-            label = example["labels"].squeeze(0)
+            label = example["labels"].to('cpu').squeeze(0)
             padded_label = torch.nn.functional.pad(label, (0, batch_max_length - label.shape[0]), value=-100)
             labels.append(padded_label)
 
         return {
-            "input_ids": torch.stack(input_ids).to('cuda'),
-            "attention_mask": torch.stack(attention_mask).to('cuda'),
-            "labels": torch.stack(labels).to('cuda')
+            "input_ids": torch.stack(input_ids),
+            "attention_mask": torch.stack(attention_mask),
+            "labels": torch.stack(labels)
         }
